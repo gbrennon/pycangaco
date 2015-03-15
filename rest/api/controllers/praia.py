@@ -1,7 +1,7 @@
 from flask.ext.restful import Resource
 from api import api, request, abort
 from api.models import Praia
-from api.serializers import PraiaSerializer
+from api.serializers import PraiaSerializer, AtividadeSerializer
 
 
 class PraiaListView(Resource):
@@ -36,5 +36,18 @@ class PraiaView(Resource):
         return '', 200
 
 
+class PraiaResourceView(Resource):
+    def get(self, id, resource):
+        try:
+            praia = Praia.objects.get_or_404(id=id)
+            if resource == 'atividades':
+                atividades = praia['atividades']
+                return AtividadeSerializer(atividades, many=True).data
+            return {resource:
+                    str(Praia.objects.get_or_404(id=id)[resource])}
+        except KeyError:
+            return 'Invalid attribute. Send me a activity valid attribute', 400
+
 api.add_resource(PraiaListView, '/v1/praias')
 api.add_resource(PraiaView, '/v1/praias/<id>')
+api.add_resource(PraiaResourceView, '/v1/praias/<id>/<resource>')

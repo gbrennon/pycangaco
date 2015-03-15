@@ -35,5 +35,15 @@ class AtividadeView(Resource):
         Atividade.objects.get_or_404(id=id).delete()
         return '', 200
 
+
+class AtividadeResourceView(Resource):
+    def get(self, id, resource):
+        try:
+            return {resource:
+                    str(Atividade.objects.get_or_404(id=id)[resource])}
+        except KeyError:
+            return 'Invalid attribute. Send me a activity valid attribute', 400
+
 api.add_resource(AtividadeListView, '/v1/atividades')
 api.add_resource(AtividadeView, '/v1/atividades/<id>')
+api.add_resource(AtividadeResourceView, '/v1/atividades/<id>/<resource>')
