@@ -1,36 +1,40 @@
 from flask.ext.restful import Resource
 from api import api, request, abort
-from api.models import Praias, Atividades
-from api.controllers.atividade import AtividadesSerializer
-from marshmallow import Schema, fields
+from api.models import Praia
+from api.serializers import PraiaSerializer
 
 
-class PraiasSerializer(Schema):
-    id = fields.String()
-    atividades = fields.Nested(AtividadesSerializer, only=['nome'], many=True)
-
-    class Meta:
-        additional = ('nome', 'descricao')
-
-
-class PraiasListView(Resource):
+class PraiaListView(Resource):
     def get(self):
-        praias = Praias.objects.all()
-        return {'praias': PraiasSerializer(praias, many=True).data}
+        praias = Praia.objects.all()
+        return PraiaSerializer(praias, many=True).data
 
     def post(self):
         if not request.json:
             abort(400)
-        praia = Praias(**request.json)
+        praia = Praia(**request.json)
         praia.save()
-        return {'praia': PraiasSerializer(praia).data}, 201
+        return PraiaSerializer(praia).data, 201
 
 
 class PraiaView(Resource):
     def get(self, id):
-        praia = Praias.objects.get_or_404(id=id)
-        return {'praia': PraiasSerializer(praia).data}
+        praia = Praia.objects.get_or_404(id=id)
+        return PraiaSerializer(praia).data
+
+    def put(self, id):
+        if not request.json:
+            abort(400)
+        praia = Praia.objects.get_or_404(id=id)
+        praia = Praia(**request.json)
+        praia.save()
+        return PraiaSerializer(praia).data, 200
+
+    def delete(self, id):
+        praia = Praia.objects.get_or_404(id=id)
+        praia.delete()
+        return '', 200
 
 
-api.add_resource(PraiasListView, '/v1/praias')
+api.add_resource(PraiaListView, '/v1/praias')
 api.add_resource(PraiaView, '/v1/praias/<id>')
